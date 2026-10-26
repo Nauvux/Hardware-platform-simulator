@@ -1,3 +1,4 @@
+// Register.cpp
 #include "Register.hpp"
 
 bool Register::isEmpty() const {
@@ -5,12 +6,12 @@ bool Register::isEmpty() const {
 }
 
 void Register::write(double val) {
-    fifo.push(val);
+    fifo.push(val); // Ajoute en fin de file
 }
 
 double Register::read() {
     if (isEmpty()) return 0.0;
-    double val = fifo.front();
-    fifo.pop();
+    double val = fifo.front(); // Récupère le premier élément entré
+    fifo.pop();                // Retire cet élément de la file
     return val;
 }
