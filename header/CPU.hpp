@@ -2,11 +2,11 @@
 #define CPU_HPP
 
 #include <string>
-#include "DataValue.hpp"
+#include "Readable.hpp"
 #include "Register.hpp"
 #include "Program.hpp"
 
-class CPU {
+class CPU : public Readable {
 private:
     std::string label;
     int cores = 1;
@@ -20,10 +20,11 @@ public:
 
     void loadFromFile(const std::string& filename);
     void simulate();
-    DataValue read();
+    
+    // Implémentation de l'interface Readable
+    DataValue read() override;
+    std::string getLabel() const override { return label; }
 
-    // Getters pour de futurs tests ou affichages
-    const std::string& getLabel() const { return label; }
     int getActiveCore() const { return activeCore; }
 };
 
