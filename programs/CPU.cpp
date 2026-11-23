@@ -2,6 +2,8 @@
 #include "ConfigFile.hpp"
 #include <stdexcept>
 
+using namespace std;
+
 // Lit le fichier de configuration du CPU et instancie ses paramètres.
 // Lève std::runtime_error si un mot-clé manque ou si une valeur est invalide.
 void CPU::loadFromFile(const std::string& filename) {

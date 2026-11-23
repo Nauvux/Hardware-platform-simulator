@@ -2,6 +2,8 @@
 #include "Register.hpp"
 #include <stdexcept>
 
+using namespace std;
+
 bool Register::isEmpty() const {
     return fifo.empty();
 }

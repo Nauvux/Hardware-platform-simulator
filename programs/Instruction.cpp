@@ -3,6 +3,8 @@
 // Instruction.cpp
 #include "Instruction.hpp"
 
+using namespace std;
+
 Instruction::Instruction(OpCode code, double o1, double o2)
     : opcode(code), op1(o1), op2(o2) {}
 

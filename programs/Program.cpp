@@ -3,6 +3,8 @@
 #include <sstream>
 #include <stdexcept>
 
+using namespace std;
+
 // Charge le fichier d'instructions texte et construit la liste du programme.
 // Lève std::runtime_error (avec le numéro de ligne) si le fichier est absent
 // ou si une instruction est invalide.

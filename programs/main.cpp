@@ -10,6 +10,8 @@
 #include <string>
 #include "CPU.hpp"
 
+using namespace std;
+
 // Écrit un petit fichier de test dans le dossier courant
 static std::string writeFile(const std::string& name, const std::string& content) {
     std::ofstream(name) << content;
