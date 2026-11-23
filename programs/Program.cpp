@@ -58,6 +58,11 @@ void Program::loadFromFile(const std::string& filename) {
             throw std::runtime_error(where + "texte en trop \"" + extra + "\"");
         }
 
+        // Les opérandes sont des constantes : une division par zéro se voit dès le chargement
+        if (code == OpCode::DIV && o2 == 0.0) {
+            throw std::runtime_error(where + "division par zéro");
+        }
+
         // Ajout de l'instruction correspondante dans le tableau
         instructions.emplace_back(code, o1, o2);
     }

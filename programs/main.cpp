@@ -69,6 +69,7 @@ static void testProgram() {
     assert(throws<std::runtime_error>([] { Program q; q.loadFromFile(writeFile("t_bad2.txt", "MUL 2 x\n")); }));
     assert(throws<std::runtime_error>([] { Program q; q.loadFromFile(writeFile("t_bad3.txt", "ADD 1\n")); }));
     assert(throws<std::runtime_error>([] { Program q; q.loadFromFile(writeFile("t_bad4.txt", "ADD 1 2 3\n")); }));
+    assert(throws<std::runtime_error>([] { Program q; q.loadFromFile(writeFile("t_bad5.txt", "DIV 4 0\n")); }));
 }
 
 static void testCpuLoading() {
