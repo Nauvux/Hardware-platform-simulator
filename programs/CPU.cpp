@@ -1,36 +1,21 @@
 #include "CPU.hpp"
-#include <fstream>
-#include <iostream>
+#include "ConfigFile.hpp"
+#include <stdexcept>
 
-// Lit le fichier de configuration du CPU et instancie ses paramètres
+// Lit le fichier de configuration du CPU et instancie ses paramètres.
+// Lève std::runtime_error si un mot-clé manque ou si une valeur est invalide.
 void CPU::loadFromFile(const std::string& filename) {
-    std::ifstream file(filename);
+    ConfigFile config(filename);
 
-    if (!file.is_open()) {
-        std::cerr << "Erreur : Impossible d'ouvrir le fichier CPU " << filename << std::endl;
-        return;
+    if (config.get("TYPE") != "CPU") {
+        throw std::runtime_error(filename + " : TYPE devrait être CPU");
     }
+    label = config.get("LABEL");
+    cores = config.getInt("CORES", 1);         // au moins 1 cœur
+    frequency = config.getInt("FREQUENCY", 1); // au moins 1 instruction par pas
 
-    std::string key;
-    // Parcours du fichier par mot-clé (KEYWORD:)
-    while (file >> key) {
-        if (key == "TYPE:") {
-            std::string type;
-            file >> type; // Lit "CPU" (ignoré car déjà dans la classe CPU)
-        } else if (key == "LABEL:") {
-            // Lit tout le reste de la ligne pour conserver le nom complet (ex: "Main CPU")
-            std::getline(file >> std::ws, label);
-        } else if (key == "CORES:") {
-            file >> cores;
-        } else if (key == "FREQUENCY:") {
-            file >> frequency;
-        } else if (key == "PROGRAM:") {
-            std::string progPath;
-            file >> progPath;
-            // Charge immédiatement le fichier de programme associé
-            program.loadFromFile(progPath);
-        }
-    }
+    // Charge immédiatement le fichier de programme associé
+    program.loadFromFile(config.get("PROGRAM"));
 
     // On s'assure que le premier cœur (index 0) est actif au démarrage
     activeCore = 0;
@@ -47,8 +32,10 @@ void CPU::simulate() {
             if (activeCore < cores - 1) {
                 activeCore++;
                 program.reset(); // On réinitialise le programme pour le nouveau cœur
-            } else {
-                // Tous les cœurs ont terminé leurs instructions : on arrête les calculs
+            }
+            // Tous les cœurs ont terminé (ou le programme est vide) : on arrête.
+            // Sans ce 2e test, un programme vide écrirait des NOP = 0 dans le registre.
+            if (program.isFinished()) {
                 break;
             }
         }

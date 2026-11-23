@@ -17,6 +17,7 @@ public:
     Instruction compute();
     bool isFinished() const;
     void reset();
+    size_t size() const; // nombre d'instructions
 };
 
 #endif // PROGRAM_HPP
