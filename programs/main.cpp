@@ -13,8 +13,8 @@
 using namespace std;
 
 // Écrit un petit fichier de test dans le dossier courant
-static std::string writeFile(const std::string& name, const std::string& content) {
-    std::ofstream(name) << content;
+static string writeFile(const string& name, const string& content) {
+    ofstream(name) << content;
     return name;
 }
 
@@ -31,10 +31,10 @@ static bool throws(F f) {
 
 static void testInstruction() {
     assert(Instruction(OpCode::ADD, 2, 3).compute() == 5);
-    assert(std::fabs(Instruction(OpCode::SUB, 4.5, 1.2).compute() - 3.3) < 1e-12);
+    assert(fabs(Instruction(OpCode::SUB, 4.5, 1.2).compute() - 3.3) < 1e-12);
     assert(Instruction(OpCode::MUL, 2, 3).compute() == 6);
     assert(Instruction(OpCode::DIV, 8, 2).compute() == 4);
-    assert(throws<std::runtime_error>([] { Instruction(OpCode::DIV, 1, 0).compute(); }));
+    assert(throws<runtime_error>([] { Instruction(OpCode::DIV, 1, 0).compute(); }));
     assert(Instruction().compute() == 0);                   // NOP
 }
 
@@ -46,7 +46,7 @@ static void testRegister() {
     assert(r.read() == 1); // FIFO : le premier écrit est le premier lu
     assert(r.read() == 2);
     assert(r.isEmpty());
-    assert(throws<std::logic_error>([&] { r.read(); }));
+    assert(throws<logic_error>([&] { r.read(); }));
 }
 
 static void testProgram() {
@@ -66,12 +66,12 @@ static void testProgram() {
     assert(p.size() == 3);
 
     // Erreurs
-    assert(throws<std::runtime_error>([] { Program q; q.loadFromFile("absent.txt"); }));
-    assert(throws<std::runtime_error>([] { Program q; q.loadFromFile(writeFile("t_bad1.txt", "JMP 1 2\n")); }));
-    assert(throws<std::runtime_error>([] { Program q; q.loadFromFile(writeFile("t_bad2.txt", "MUL 2 x\n")); }));
-    assert(throws<std::runtime_error>([] { Program q; q.loadFromFile(writeFile("t_bad3.txt", "ADD 1\n")); }));
-    assert(throws<std::runtime_error>([] { Program q; q.loadFromFile(writeFile("t_bad4.txt", "ADD 1 2 3\n")); }));
-    assert(throws<std::runtime_error>([] { Program q; q.loadFromFile(writeFile("t_bad5.txt", "DIV 4 0\n")); }));
+    assert(throws<runtime_error>([] { Program q; q.loadFromFile("absent.txt"); }));
+    assert(throws<runtime_error>([] { Program q; q.loadFromFile(writeFile("t_bad1.txt", "JMP 1 2\n")); }));
+    assert(throws<runtime_error>([] { Program q; q.loadFromFile(writeFile("t_bad2.txt", "MUL 2 x\n")); }));
+    assert(throws<runtime_error>([] { Program q; q.loadFromFile(writeFile("t_bad3.txt", "ADD 1\n")); }));
+    assert(throws<runtime_error>([] { Program q; q.loadFromFile(writeFile("t_bad4.txt", "ADD 1 2 3\n")); }));
+    assert(throws<runtime_error>([] { Program q; q.loadFromFile(writeFile("t_bad5.txt", "DIV 4 0\n")); }));
 }
 
 static void testCpuLoading() {
@@ -83,14 +83,14 @@ static void testCpuLoading() {
     assert(cpu.getCores() == 2);
     assert(cpu.getFrequency() == 3);
 
-    assert(throws<std::runtime_error>([] { CPU c; c.loadFromFile("absent.txt"); }));
-    assert(throws<std::runtime_error>([] {
+    assert(throws<runtime_error>([] { CPU c; c.loadFromFile("absent.txt"); }));
+    assert(throws<runtime_error>([] {
         CPU c; c.loadFromFile(writeFile("t_cpu2.txt", "TYPE: CPU\nLABEL: x\nCORES: 0\nFREQUENCY: 1\nPROGRAM: t_prog2.txt\n"));
     }));
-    assert(throws<std::runtime_error>([] {
+    assert(throws<runtime_error>([] {
         CPU c; c.loadFromFile(writeFile("t_cpu3.txt", "TYPE: CPU\nLABEL: x\nCORES: 1\nPROGRAM: t_prog2.txt\n")); // FREQUENCY manquant
     }));
-    assert(throws<std::runtime_error>([] {
+    assert(throws<runtime_error>([] {
         CPU c; c.loadFromFile(writeFile("t_cpu4.txt", "TYPE: CPU\nLABEL x\n")); // ':' manquant
     }));
 }
@@ -120,10 +120,10 @@ static void testCpuSimulation() {
 
 static void cleanUp() {
     const char* files[] = {"t_prog.txt", "t_prog2.txt", "t_empty.txt", "t_bad1.txt", "t_bad2.txt",
-                           "t_bad3.txt", "t_bad4.txt", "t_cpu.txt", "t_cpu2.txt", "t_cpu3.txt",
-                           "t_cpu4.txt", "t_cpu5.txt"};
+                           "t_bad3.txt", "t_bad4.txt", "t_bad5.txt", "t_cpu.txt", "t_cpu2.txt",
+                           "t_cpu3.txt", "t_cpu4.txt", "t_cpu5.txt"};
     for (const char* f : files) {
-        std::remove(f);
+        remove(f);
     }
 }
 
@@ -133,30 +133,30 @@ int main(int argc, char* argv[]) {
         try {
             CPU cpu;
             cpu.loadFromFile(argv[1]);
-            int steps = std::stoi(argv[2]);
+            int steps = stoi(argv[2]);
             for (int s = 1; s <= steps; ++s) {
                 cpu.simulate();
-                std::cout << "pas " << s << " (" << cpu.getLabel() << ", coeur " << cpu.getActiveCore() + 1
+                cout << "pas " << s << " (" << cpu.getLabel() << ", coeur " << cpu.getActiveCore() + 1
                           << "/" << cpu.getCores() << ") :";
                 for (DataValue v = cpu.read(); v.valid; v = cpu.read()) {
-                    std::cout << ' ' << v.value;
+                    cout << ' ' << v.value;
                 }
-                std::cout << std::endl;
+                cout << endl;
             }
-        } catch (const std::exception& e) {
-            std::cerr << "Erreur : " << e.what() << std::endl;
+        } catch (const exception& e) {
+            cerr << "Erreur : " << e.what() << endl;
             return 1;
         }
         return 0;
     }
 
-    std::cout << "--- Tests du module CPU ---" << std::endl;
+    cout << "--- Tests du module CPU ---" << endl;
     testInstruction();
     testRegister();
     testProgram();
     testCpuLoading();
     testCpuSimulation();
     cleanUp();
-    std::cout << "Tous les tests passent." << std::endl;
+    cout << "Tous les tests passent." << endl;
     return 0;
 }

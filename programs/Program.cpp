@@ -6,33 +6,33 @@
 using namespace std;
 
 // Charge le fichier d'instructions texte et construit la liste du programme.
-// Lève std::runtime_error (avec le numéro de ligne) si le fichier est absent
+// Lève runtime_error (avec le numéro de ligne) si le fichier est absent
 // ou si une instruction est invalide.
-void Program::loadFromFile(const std::string& filename) {
-    std::ifstream file(filename);
+void Program::loadFromFile(const string& filename) {
+    ifstream file(filename);
 
     // Vérification de l'ouverture du fichier
     if (!file.is_open()) {
-        throw std::runtime_error("impossible d'ouvrir le fichier de programme " + filename);
+        throw runtime_error("impossible d'ouvrir le fichier de programme " + filename);
     }
 
     // On repart d'un programme vide (sinon un 2e appel ajouterait à la suite)
     instructions.clear();
 
-    std::string line;
+    string line;
     int lineNumber = 0;
     // Lecture ligne par ligne : une instruction par ligne
-    while (std::getline(file, line)) {
+    while (getline(file, line)) {
         lineNumber++;
-        std::istringstream in(line);
-        std::string opStr;
+        istringstream in(line);
+        string opStr;
         if (!(in >> opStr)) {
             continue; // ligne vide
         }
-        std::string where = filename + ":" + std::to_string(lineNumber) + " : ";
+        string where = filename + ":" + to_string(lineNumber) + " : ";
 
         if (opStr == "NOP") {
-            // emplace_back (méthode de std::vector)
+            // emplace_back (méthode de vector)
             //   1 : Le vector alloue directement la case mémoire à la fin du tableau.
             //   2 : Il construit l'objet Instruction directement à cet emplacement.
 
@@ -47,22 +47,22 @@ void Program::loadFromFile(const std::string& filename) {
         else if (opStr == "MUL") code = OpCode::MUL;
         else if (opStr == "DIV") code = OpCode::DIV;
         else {
-            throw std::runtime_error(where + "instruction inconnue \"" + opStr + "\"");
+            throw runtime_error(where + "instruction inconnue \"" + opStr + "\"");
         }
 
         // Exactement deux opérandes numériques, rien d'autre sur la ligne
         double o1, o2;
-        std::string extra;
+        string extra;
         if (!(in >> o1 >> o2)) {
-            throw std::runtime_error(where + opStr + " attend deux nombres");
+            throw runtime_error(where + opStr + " attend deux nombres");
         }
         if (in >> extra) {
-            throw std::runtime_error(where + "texte en trop \"" + extra + "\"");
+            throw runtime_error(where + "texte en trop \"" + extra + "\"");
         }
 
         // Les opérandes sont des constantes : une division par zéro se voit dès le chargement
         if (code == OpCode::DIV && o2 == 0.0) {
-            throw std::runtime_error(where + "division par zéro");
+            throw runtime_error(where + "division par zéro");
         }
 
         // Ajout de l'instruction correspondante dans le tableau

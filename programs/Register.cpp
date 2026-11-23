@@ -17,7 +17,7 @@ double Register::read() {
     // au lieu de renvoyer 0, qui ressemblerait à un vrai résultat.
     // (Le CPU vérifie toujours isEmpty() avant d'appeler read().)
     if (isEmpty()) {
-        throw std::logic_error("Register::read() sur un registre vide");
+        throw logic_error("Register::read() sur un registre vide");
     }
     double val = fifo.front(); // Récupère le premier élément entré
     fifo.pop();                // Retire cet élément de la file

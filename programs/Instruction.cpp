@@ -19,7 +19,7 @@ double Instruction::compute() const {
             return op1 * op2;
         case OpCode::DIV:
             if (op2 == 0.0) {
-                throw std::runtime_error("division par zéro");
+                throw runtime_error("division par zéro");
             }
             return op1 / op2;
         case OpCode::NOP:

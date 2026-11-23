@@ -5,12 +5,12 @@
 using namespace std;
 
 // Lit le fichier de configuration du CPU et instancie ses paramètres.
-// Lève std::runtime_error si un mot-clé manque ou si une valeur est invalide.
-void CPU::loadFromFile(const std::string& filename) {
+// Lève runtime_error si un mot-clé manque ou si une valeur est invalide.
+void CPU::loadFromFile(const string& filename) {
     ConfigFile config(filename);
 
     if (config.get("TYPE") != "CPU") {
-        throw std::runtime_error(filename + " : TYPE devrait être CPU");
+        throw runtime_error(filename + " : TYPE devrait être CPU");
     }
     label = config.get("LABEL");
     cores = config.getInt("CORES", 1);         // au moins 1 cœur
