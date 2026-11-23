@@ -32,7 +32,7 @@ static void testInstruction() {
     assert(std::fabs(Instruction(OpCode::SUB, 4.5, 1.2).compute() - 3.3) < 1e-12);
     assert(Instruction(OpCode::MUL, 2, 3).compute() == 6);
     assert(Instruction(OpCode::DIV, 8, 2).compute() == 4);
-    assert(Instruction(OpCode::DIV, 1, 0).compute() == 0); // choix : division par 0 -> 0
+    assert(throws<std::runtime_error>([] { Instruction(OpCode::DIV, 1, 0).compute(); }));
     assert(Instruction().compute() == 0);                   // NOP
 }
 

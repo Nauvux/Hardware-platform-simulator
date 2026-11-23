@@ -1,3 +1,5 @@
+#include <stdexcept>
+
 // Instruction.cpp
 #include "Instruction.hpp"
 
@@ -13,8 +15,11 @@ double Instruction::compute() const {
             return op1 - op2;
         case OpCode::MUL: 
             return op1 * op2;
-        case OpCode::DIV: 
-            return (op2 != 0.0) ? (op1 / op2) : 0.0; // Protection contre la division par zéro
+        case OpCode::DIV:
+            if (op2 == 0.0) {
+                throw std::runtime_error("division par zéro");
+            }
+            return op1 / op2;
         case OpCode::NOP:
         default:          
             return 0.0;
