@@ -3,14 +3,14 @@
 
 #include <queue>
 #include <string>
+#include "Component.hpp"
 #include "Readable.hpp"
 #include "Bindable.hpp"
 
 // Un bus lit une source Readable et transmet ses donnees avec
 // un cycle de simulation de latence.
-class Bus : public Readable, public Bindable {
+class Bus : public Component, public Readable, public Bindable {
 private:
-    std::string label;
     int width = 1;
     std::string sourceLabel;
 
@@ -34,11 +34,10 @@ public:
     // Phase 3 : rend disponibles les anciennes donnees pending, puis lit
     // au maximum WIDTH nouvelles donnees, qui restent pending jusqu'au
     // prochain appel de simulate().
-    void simulate();
+    void simulate() override;
 
     // Interface Readable : lit la plus ancienne donnee prete (FIFO).
     DataValue read() override;
-    std::string getLabel() const override { return label; }
 
     std::string getSourceLabel() const override { return sourceLabel; }
     int getWidth() const { return width; }
