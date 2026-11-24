@@ -27,8 +27,9 @@ ConfigFile::ConfigFile(const string& name) : filename(name) {
     // Lecture LIGNE par ligne (et pas mot par mot) : on découpe sur le premier ':'
     while (getline(file, line)) {
         lineNumber++;
-        if (trim(line).empty()) {
-            continue; // ligne vide
+        const string content = trim(line);
+        if (content.empty() || content[0] == '#') {
+            continue; // ligne vide ou commentaire
         }
         size_t colon = line.find(':');
         if (colon == string::npos) {

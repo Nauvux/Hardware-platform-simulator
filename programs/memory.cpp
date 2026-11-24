@@ -36,10 +36,6 @@ void Memory::bind(Readable* newSource) {
     if (sourceLabel.empty()) {
         throw std::logic_error("Memory: charger le fichier avant bind()");
     }
-    if (newSource->getLabel() != sourceLabel) {
-        throw std::invalid_argument("Memory: le label de la source ne correspond pas a SOURCE: "
-                                    + sourceLabel);
-    }
     source = newSource;
 }
 
