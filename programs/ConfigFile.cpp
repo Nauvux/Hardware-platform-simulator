@@ -40,6 +40,12 @@ ConfigFile::ConfigFile(const string& name) : filename(name) {
         for (char& c : key) {
             c = static_cast<char>(toupper(static_cast<unsigned char>(c)));
         }
+        // Le type est aussi un mot-clé : "TYPE: cpu" doit valoir "TYPE: CPU"
+        if (key == "TYPE") {
+            for (char& c : value) {
+                c = static_cast<char>(toupper(static_cast<unsigned char>(c)));
+            }
+        }
         values[key] = value;
     }
 }
