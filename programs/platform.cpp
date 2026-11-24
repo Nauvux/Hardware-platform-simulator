@@ -1,4 +1,8 @@
 #include "platform.hpp"
+#include "CPU.hpp"
+#include "bus.hpp"
+#include "memory.hpp"
+#include "display.hpp"
 #include <cctype>
 #include <fstream>
 #include <map>
@@ -73,12 +77,9 @@ void Platform::loadFromFile(const std::string& filename) {
         throw std::runtime_error("Platform: impossible d'ouvrir " + filename);
     }
 
-    // On charge dans des conteneurs temporaires : en cas d'erreur,
+    // On charge dans un conteneur temporaire : en cas d'erreur,
     // la plateforme actuelle reste inchangee.
-    std::vector<std::unique_ptr<CPU>> newCpus;
-    std::vector<std::unique_ptr<Bus>> newBuses;
-    std::vector<std::unique_ptr<Memory>> newMemories;
-    std::vector<std::unique_ptr<Display>> newDisplays;
+    std::vector<std::unique_ptr<Component>> newComponents;
     std::string line;
     while (std::getline(file, line)) {
         const std::string entry = trim(line);
@@ -89,88 +90,63 @@ void Platform::loadFromFile(const std::string& filename) {
         const std::string path = componentPath(entry, filename);
         const std::string type = componentType(path);
 
+        // Seul endroit ou l'on a besoin du type exact : la creation.
         if (type == "CPU") {
             std::unique_ptr<CPU> cpu(new CPU());
             cpu->loadFromFile(path);
-            newCpus.push_back(std::move(cpu));
+            newComponents.push_back(std::move(cpu));
         } else if (type == "BUS") {
             std::unique_ptr<Bus> bus(new Bus());
             bus->loadFromFile(path);
-            newBuses.push_back(std::move(bus));
+            newComponents.push_back(std::move(bus));
         } else if (type == "MEMORY") {
             std::unique_ptr<Memory> memory(new Memory());
             memory->loadFromFile(path);
-            newMemories.push_back(std::move(memory));
+            newComponents.push_back(std::move(memory));
         } else if (type == "DISPLAY") {
             std::unique_ptr<Display> display(new Display());
             display->loadFromFile(path);
-            newDisplays.push_back(std::move(display));
+            newComponents.push_back(std::move(display));
         } else {
             throw std::runtime_error("Platform: TYPE inconnu '" + type + "' dans " + path);
         }
     }
 
-    cpus.swap(newCpus);
-    buses.swap(newBuses);
-    memories.swap(newMemories);
-    displays.swap(newDisplays);
+    components.swap(newComponents);
     bound = false;
 }
 
 void Platform::bind() {
     // Un label identifie une source lisible de maniere unique.
+    // dynamic_cast renvoie nullptr si le composant n'est pas Readable (ex. Display).
     std::map<std::string, Readable*> sources;
-    for (const auto& cpu : cpus) {
-        if (!sources.emplace(cpu->getLabel(), cpu.get()).second) {
-            throw std::runtime_error("Platform: label duplique : " + cpu->getLabel());
+    for (const auto& component : components) {
+        Readable* readable = dynamic_cast<Readable*>(component.get());
+        if (readable == nullptr) {
+            continue;
         }
-    }
-    for (const auto& bus : buses) {
-        if (!sources.emplace(bus->getLabel(), bus.get()).second) {
-            throw std::runtime_error("Platform: label duplique : " + bus->getLabel());
-        }
-    }
-    for (const auto& memory : memories) {
-        if (!sources.emplace(memory->getLabel(), memory.get()).second) {
-            throw std::runtime_error("Platform: label duplique : " + memory->getLabel());
+        if (!sources.emplace(component->getLabel(), readable).second) {
+            throw std::runtime_error("Platform: label duplique : " + component->getLabel());
         }
     }
 
     // Resoudre toutes les sources avant d'effectuer les connexions.
-    std::vector<Readable*> busSources;
-    std::vector<Readable*> memorySources;
-    std::vector<Readable*> displaySources;
-    for (const auto& bus : buses) {
-        const auto it = sources.find(bus->getSourceLabel());
-        if (it == sources.end()) {
-            throw std::runtime_error("Platform: source introuvable : " + bus->getSourceLabel());
+    std::vector<std::pair<Bindable*, Readable*>> links;
+    for (const auto& component : components) {
+        Bindable* bindable = dynamic_cast<Bindable*>(component.get());
+        if (bindable == nullptr) {
+            continue; // ex. un CPU n'a pas de source
         }
-        busSources.push_back(it->second);
-    }
-    for (const auto& memory : memories) {
-        const auto it = sources.find(memory->getSourceLabel());
+        const auto it = sources.find(bindable->getSourceLabel());
         if (it == sources.end()) {
-            throw std::runtime_error("Platform: source introuvable : " + memory->getSourceLabel());
+            throw std::runtime_error("Platform: source introuvable : " + bindable->getSourceLabel());
         }
-        memorySources.push_back(it->second);
-    }
-    for (const auto& display : displays) {
-        const auto it = sources.find(display->getSourceLabel());
-        if (it == sources.end()) {
-            throw std::runtime_error("Platform: source introuvable : " + display->getSourceLabel());
-        }
-        displaySources.push_back(it->second);
+        links.emplace_back(bindable, it->second);
     }
 
     bound = false;
-    for (size_t i = 0; i < buses.size(); ++i) {
-        buses[i]->bind(busSources[i]);
-    }
-    for (size_t i = 0; i < memories.size(); ++i) {
-        memories[i]->bind(memorySources[i]);
-    }
-    for (size_t i = 0; i < displays.size(); ++i) {
-        displays[i]->bind(displaySources[i]);
+    for (const auto& link : links) {
+        link.first->bind(link.second);
     }
     bound = true;
 }
@@ -180,18 +156,10 @@ void Platform::simulate() {
         throw std::logic_error("Platform: appeler bind() avant simulate()");
     }
 
-    // Ordre fixe pour rendre le resultat reproductible.
-    for (const auto& cpu : cpus) {
-        cpu->simulate();
-    }
-    for (const auto& bus : buses) {
-        bus->simulate();
-    }
-    for (const auto& memory : memories) {
-        memory->simulate();
-    }
-    for (const auto& display : displays) {
-        display->simulate();
+    // Polymorphisme : chaque composant execute SA version de simulate().
+    // Ordre = ordre du fichier platform.txt.
+    for (const auto& component : components) {
+        component->simulate();
     }
 }
 
