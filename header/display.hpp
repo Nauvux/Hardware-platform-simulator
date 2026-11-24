@@ -2,10 +2,12 @@
 #define DISPLAY_HPP
 
 #include <string>
+#include "Component.hpp"
 #include "Readable.hpp"
+#include "Bindable.hpp"
 
 // Un afficheur lit sa source tous les REFRESH cycles.
-class Display {
+class Display : public Component, public Bindable {
 private:
     int refresh = 1;
     int stepCount = 0;
@@ -19,13 +21,13 @@ public:
     void loadFromFile(const std::string& filename);
 
     // Phase 2 : connexion a un composant lisible.
-    void bind(Readable* newSource);
+    void bind(Readable* newSource) override;
     void bind(Readable& newSource) { bind(&newSource); }
 
     // Phase 3 : affiche toutes les valeurs disponibles au rythme REFRESH.
-    void simulate();
+    void simulate() override;
 
-    std::string getSourceLabel() const { return sourceLabel; }
+    std::string getSourceLabel() const override { return sourceLabel; }
     int getRefresh() const { return refresh; }
 };
 

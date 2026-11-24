@@ -3,12 +3,13 @@
 
 #include <string>
 #include <vector>
+#include "Component.hpp"
 #include "Readable.hpp"
+#include "Bindable.hpp"
 
 // Memoire de capacite fixe, utilisee comme tampon circulaire FIFO.
-class Memory : public Readable {
+class Memory : public Component, public Readable, public Bindable {
 private:
-    std::string label;
     int size = 1;
     int access = 1;
     std::string sourceLabel;
@@ -27,19 +28,18 @@ public:
     void loadFromFile(const std::string& filename);
 
     // Phase 2 : connexion a un objet Readable.
-    void bind(Readable* newSource);
+    void bind(Readable* newSource) override;
     void bind(Readable& newSource) { bind(&newSource); }
 
     // Phase 3 : lecture de toutes les valeurs disponibles tous les ACCESS cycles.
-    void simulate();
+    void simulate() override;
 
     // Interface Readable. Override indique au compilateur
     // qu'une méthode redéfinit une méthode virtuelle héritée d'une classe parent.
     // Cela permet au compilateur de détecter certaines erreurs.
     DataValue read() override;
-    std::string getLabel() const override { return label; }
 
-    std::string getSourceLabel() const { return sourceLabel; }
+    std::string getSourceLabel() const override { return sourceLabel; }
     int getSize() const { return size; }
     int getAccess() const { return access; }
     size_t getUnreadCount() const { return unreadCount; }
